@@ -19,8 +19,9 @@ public class Program
 
         await channel.ExchangeDeclareAsync("toClient", ExchangeType.Topic);
 
-        Console.WriteLine("Declare Airport");
+        Console.WriteLine("Declare Airport (Fly med destination hertil bliver vist)");
         string? airport = Console.ReadLine();
+        Console.WriteLine("Showing flights to " + airport);
 
         QueueDeclareOk queueDeclareResult = await channel.QueueDeclareAsync();
         await channel.QueueBindAsync(queueDeclareResult.QueueName , exchange: "toClient", routingKey: airport);

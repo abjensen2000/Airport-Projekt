@@ -77,6 +77,7 @@ namespace AirportWebAPI.Controllers
         public async void OpdaterSubscribers()
         {
             List<Flight> flyListe = _flightContext.Flights.ToList();
+            //Fandt selv på det her btw
             Dictionary<string, List<Flight>> flightsByDestination = flyListe.GroupBy(flight => flight.Destination).ToDictionary(group => group.Key, group => group.ToList());
             foreach (var kvp in flightsByDestination)
             {
