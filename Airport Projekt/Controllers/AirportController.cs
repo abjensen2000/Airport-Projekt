@@ -30,19 +30,8 @@ namespace AirportWebAPI.Controllers
         {
             _flightContext.Flights.Add(flight);
             _flightContext.SaveChanges();
-            List<Flight> flyListe = _flightContext.Flights.ToList();
-            //Det nedenunder fandt jeg selv på btw
-            Dictionary<string, List<Flight>> flightsByDestination = flyListe.GroupBy(flight => flight.Destination).ToDictionary(group => group.Key, group => group.ToList());
-            foreach (var kvp in flightsByDestination)
-            {
-                string destination = kvp.Key;
-                Console.WriteLine(destination);
-                List<Flight> updatedOrderList = kvp.Value;
-                var message = JsonSerializer.Serialize(updatedOrderList);
-                var body = Encoding.UTF8.GetBytes(message);
-                var channel = await _connection.CreateChannelAsync();
-                await channel.BasicPublishAsync("toClient", destination, body);
-            }
+
+            OpdaterSubscribers();
 
 
 
@@ -60,18 +49,7 @@ namespace AirportWebAPI.Controllers
             _flightContext.Entry(newFlight).State = EntityState.Modified;
             await _flightContext.SaveChangesAsync();
 
-            List<Flight> flyListe = _flightContext.Flights.ToList();
-            Dictionary<string, List<Flight>> flightsByDestination = flyListe.GroupBy(flight => flight.Destination).ToDictionary(group => group.Key, group => group.ToList());
-            foreach (var kvp in flightsByDestination)
-            {
-                string destination = kvp.Key;
-                Console.WriteLine(destination);
-                List<Flight> updatedOrderList = kvp.Value;
-                var message = JsonSerializer.Serialize(updatedOrderList);
-                var body = Encoding.UTF8.GetBytes(message);
-                var channel = await _connection.CreateChannelAsync();
-                await channel.BasicPublishAsync("toClient", destination, body);
-            }
+            OpdaterSubscribers();
 
             return Ok(newFlight);
         }
@@ -86,18 +64,7 @@ namespace AirportWebAPI.Controllers
             {
                 _flightContext.Flights.Remove(currentFlight);
                 await _flightContext.SaveChangesAsync();
-                List<Flight> flyListe = _flightContext.Flights.ToList();
-                Dictionary<string, List<Flight>> flightsByDestination = flyListe.GroupBy(flight => flight.Destination).ToDictionary(group => group.Key, group => group.ToList());
-                foreach (var kvp in flightsByDestination)
-                {
-                    string destination = kvp.Key;
-                    Console.WriteLine(destination);
-                    List<Flight> updatedOrderList = kvp.Value;
-                    var message = JsonSerializer.Serialize(updatedOrderList);
-                    var body = Encoding.UTF8.GetBytes(message);
-                    var channel = await _connection.CreateChannelAsync();
-                    await channel.BasicPublishAsync("toClient", destination, body);
-                }
+                OpdaterSubscribers();
                 return Ok();
 
             }
@@ -105,6 +72,23 @@ namespace AirportWebAPI.Controllers
             {
                 return BadRequest();
             }
+        }
+
+        public async void OpdaterSubscribers()
+        {
+            List<Flight> flyListe = _flightContext.Flights.ToList();
+            Dictionary<string, List<Flight>> flightsByDestination = flyListe.GroupBy(flight => flight.Destination).ToDictionary(group => group.Key, group => group.ToList());
+            foreach (var kvp in flightsByDestination)
+            {
+                string destination = kvp.Key;
+                Console.WriteLine(destination);
+                List<Flight> updatedOrderList = kvp.Value;
+                var message = JsonSerializer.Serialize(updatedOrderList);
+                var body = Encoding.UTF8.GetBytes(message);
+                var channel = await _connection.CreateChannelAsync();
+                await channel.BasicPublishAsync("toClient", destination, body);
+            }
+
         }
 
 
