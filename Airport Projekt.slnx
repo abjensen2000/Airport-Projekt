@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Airport Projekt/Airport Projekt.csproj" />
+  <Project Path="AirportInfoScreen/AirportFlightScreen.csproj" />
+</Solution>
