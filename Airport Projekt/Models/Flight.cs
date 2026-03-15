@@ -4,28 +4,26 @@ namespace AirportWebAPI.Models
 {
     public class Flight
     {
+        // Vi bruger PascalCase (stort begyndelsesbogstav) til public properties i C#.
+        // Auto-properties gør koden meget mere læsbar og moderne.
         [Key]
-        private string _flightNumber;
-        private string _destination;
-        private string _departureTime;
-        private string _gate;
-        private string _status;
+        public string FlightNumber { get; set; }
+        public string Destination { get; set; }
+        
+        // Vi bruger DateTime i stedet for string for at kunne sortere og lave beregninger på tid.
+        public DateTime DepartureTime { get; set; }
+        public string Gate { get; set; }
+        public string Status { get; set; }
 
-        public Flight(string flightNumber, string destination, string departureTime, string gate, string status)
+        public Flight() { } // EF Core kræver en tom constructor.
+
+        public Flight(string flightNumber, string destination, DateTime departureTime, string gate, string status)
         {
-            _flightNumber = flightNumber;
-            _destination = destination;
-            _departureTime = departureTime;
-            _gate = gate;
-            _status = status;
+            FlightNumber = flightNumber;
+            Destination = destination;
+            DepartureTime = departureTime;
+            Gate = gate;
+            Status = status;
         }
-
-        [Key]
-
-        public string FlightNumber { get => _flightNumber; set => _flightNumber = value; }
-        public string Destination { get => _destination; set => _destination = value; }
-        public string DepartureTime { get => _departureTime; set => _departureTime = value; }
-        public string Gate { get => _gate; set => _gate = value; }
-        public string Status { get => _status; set => _status = value; }
     }
 }

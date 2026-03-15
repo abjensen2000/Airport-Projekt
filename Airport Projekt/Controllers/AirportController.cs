@@ -31,10 +31,8 @@ namespace AirportWebAPI.Controllers
             _flightContext.Flights.Add(flight);
             _flightContext.SaveChanges();
 
-            OpdaterSubscribers();
-
-
-
+            // Vi bruger await her for at sikre, at fejlene i publiceringen bliver fanget.
+            await OpdaterSubscribersAsync();
 
             return Ok(flight);
         }
@@ -49,7 +47,7 @@ namespace AirportWebAPI.Controllers
             _flightContext.Entry(newFlight).State = EntityState.Modified;
             await _flightContext.SaveChangesAsync();
 
-            OpdaterSubscribers();
+            await OpdaterSubscribersAsync();
 
             return Ok(newFlight);
         }
@@ -64,7 +62,7 @@ namespace AirportWebAPI.Controllers
             {
                 _flightContext.Flights.Remove(currentFlight);
                 await _flightContext.SaveChangesAsync();
-                OpdaterSubscribers();
+                await OpdaterSubscribersAsync();
                 return Ok();
 
             }
@@ -74,22 +72,30 @@ namespace AirportWebAPI.Controllers
             }
         }
 
-        public async void OpdaterSubscribers()
+        // Vi ændrer her metoden til at returnere en Task i stedet for void.
+        // Dette er vigtigt, da 'async void' gør det svært at fange fejl korrekt.
+        private async Task OpdaterSubscribersAsync()
         {
             List<Flight> flyListe = _flightContext.Flights.ToList();
-            //Fandt selv på det her btw
-            Dictionary<string, List<Flight>> flightsByDestination = flyListe.GroupBy(flight => flight.Destination).ToDictionary(group => group.Key, group => group.ToList());
+            
+            // Flot logik til at gruppere fly efter destination!
+            var flightsByDestination = flyListe.GroupBy(f => f.Destination).ToDictionary(g => g.Key, g => g.ToList());
+            
             foreach (var kvp in flightsByDestination)
             {
                 string destination = kvp.Key;
-                Console.WriteLine(destination);
-                List<Flight> updatedOrderList = kvp.Value;
-                var message = JsonSerializer.Serialize(updatedOrderList);
+                List<Flight> updatedList = kvp.Value;
+                
+                var message = JsonSerializer.Serialize(updatedList);
                 var body = Encoding.UTF8.GetBytes(message);
-                var channel = await _connection.CreateChannelAsync();
-                await channel.BasicPublishAsync("toClient", destination, body);
+                
+                // Vi bruger 'await using' her for at sikre, at kanalen bliver lukket korrekt.
+                // Det forhindrer at vi løber tør for ressourcer i RabbitMQ.
+                await using var channel = await _connection.CreateChannelAsync();
+                await channel.BasicPublishAsync(exchange: "toClient", routingKey: destination, body: body);
+                
+                Console.WriteLine($"Publiceret flyopdateringer for destination: {destination}");
             }
-
         }
 
 

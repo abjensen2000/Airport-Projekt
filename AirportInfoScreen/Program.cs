@@ -39,7 +39,7 @@ public class Program
             if (flights is not null)
             {
                 _flights = flights;
-                PrintOrders();
+                PrintFlights(); // Omdøbt fra 'PrintOrders' for at matche fly-konteksten.
             }
             else
             {
@@ -48,23 +48,24 @@ public class Program
 
 
             return Task.CompletedTask;
-        };
+            };
 
-        await channel.BasicConsumeAsync(queueDeclareResult.QueueName, autoAck: true, consumer: consumer);
-
-
-        Console.ReadLine();
-    }
+            await channel.BasicConsumeAsync(queueDeclareResult.QueueName, autoAck: true, consumer: consumer);
 
 
-    private static void PrintOrders()
-    {
-        Console.WriteLine("FlightNumber  | Destination | Afgangs tidspunkt | Gate | Status");
-        Console.WriteLine("-----------------------------------------");
-        _flights.ForEach(flight =>
-        {
-            Console.WriteLine($"{flight.FlightNumber} | {flight.Destination} | {flight.DepartureTime} | {flight.Gate} | {flight.Status}");
-        });
-        Console.WriteLine("-----------------------------------------");
-    }
-}
+            Console.ReadLine();
+            }
+
+
+            private static void PrintFlights()
+            {
+            // Vi har opdateret metoden her til at bruge lufthavnsterminologi.
+            Console.WriteLine("\nFlightNumber | Destination | Afgangstidspunkt | Gate | Status");
+            Console.WriteLine("-----------------------------------------");
+            _flights.ForEach(flight =>
+            {
+            Console.WriteLine($"{flight.FlightNumber,-12} | {flight.Destination,-11} | {flight.DepartureTime:HH:mm} | {flight.Gate,-4} | {flight.Status}");
+            });
+            Console.WriteLine("-----------------------------------------");
+            }
+            }
